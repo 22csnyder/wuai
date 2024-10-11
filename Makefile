@@ -17,16 +17,16 @@ PYTHON_INTERPRETER = python
 requirements:
 	conda env update --name $(ENV_NAME) --file environment.yml --prune
 
+# conda init zsh
+# conda activate $(ENV_NAME)
 
-# conda activate $(PROJECT_NAME)
 # python -m pip install -e .
-#	conda env update --name $(PROJECT_NAME) --file environment.yml --prune -v
+#	conda env update --name $(ENV_NAME) --file environment.yml --prune -v
 
 #conda env export —from-history > environment.yml --no-builds 		
 #	# from history makes it cross platform
 #To automate a backup of the current environment run:
 #	# conda env export > environment.yml
-
 
 
 ## Delete all compiled Python files

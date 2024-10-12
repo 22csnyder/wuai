@@ -10,12 +10,14 @@ from wuai.post2api import post_data
 
 
 class TokenDiplomat(Settings):
-    def __post_init__(self):
-        super().__post_init__()
-        self._t0 = 0
+    # def __post_init__(self):
+    #     super().__post_init__()
+    #     self.refresh_token()
 
     @property
     def token(self):
+        if not hasattr(self, "_response"):
+            self.refresh_token()
         if self.remaining_time() <= 0:  # equality on __init__
             self.refresh_token()
         return self._response["access_token"]
@@ -26,7 +28,7 @@ class TokenDiplomat(Settings):
         token_merit = {
             "url": self.token_url,
             "auth": HTTPBasicAuth(self.client_id, self.client_secret),
-            "data": self.payload.dict(),
+            "data": self.payload.model_dump(),
             "timeout": 10,
         }
         self._merit = token_merit  # noqa
@@ -34,6 +36,8 @@ class TokenDiplomat(Settings):
 
     def remaining_time(self):
         """int (s) of time remaining on token"""
+        if not hasattr(self, "_t0"):
+            self.refresh_token()
         return self._response["expires_in"] - int((time.time() - self._t0))
 
     def refresh_token(self, timeout_requests: int = 10):
@@ -61,11 +65,10 @@ if __name__ == "__main__":
         print(e)
     print(" begin post ")
 
-
     hello_message = {
         "messages": [{"role": "user", "content": "What is the first letter of the alphabet?"}]
     }
-    result = post_data(ts.api.gpt4o, token, hello_message)
+    result = post_data(api_url=ts.api.gpt4o, token=token, hello_message)
 
     # print("Response from API:", result)
 

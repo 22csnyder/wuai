@@ -3,7 +3,7 @@ import time, os
 
 import requests
 from requests.auth import HTTPBasicAuth
-
+from wuai.logging_config import setup_logging
 from wuai.settings import Settings, Payload
 from wuai.status_code_exception import StatusCodeException, Timeout, TimeoutException
 from wuai.post2api import post_data, get_access_token
@@ -62,29 +62,87 @@ class TokenDiplomat(Settings):
             raise RuntimeError(f"Status code exception: {e}")
 
 
-if __name__ == "__main__":
-    ts = token_diplomat = TokenDiplomat()
-    try:
-        token = token_diplomat.refresh_token()
-        print("Access token obtained:", token)
-    except RuntimeError as e:
-        print(e)
-    print(" begin post ")
+def debug_setup():
+    from wuai.token_diplomacy import TokenDiplomat, Settings
 
-    hello_message = {
-        "messages": [{"role": "user", "content": "What is the first letter of the alphabet?"}]
+    td = TokenDiplomat()
+    token = td.token  # AZURE_OPENAI_AD_TOKEN
+    merit = td.merit
+    settings = Settings()
+
+    rprint(f"{settings=}")
+    rprint(f"{td.payload=}")
+
+    rprint(f"POST for token:\n,{td.merit=}")
+    rprint(f"token:\n{td.token[:20]=}")
+
+    messages = {
+        "messages": [{"role": "user", "content": "Was ist der erste Buchstabe des Alphabets?"}]
+    }
+    headers: dict[str, str] = {
+        "Authorization": f"Bearer {td.token}",
+        "Content-Type": "application/json",
     }
 
-    result = post_data(api_url=ts.api.gpt4o, token=token, data=hello_message)
+    post_data_options = dict(url=td.api.gpt4o, json=messages, headers=headers)
+    rprint(f"POST options for completion:\n", post_data_options)
 
-    """
-    headers = {
-        'Authorization': f'Bearer {token}',
-        'Content-Type': 'application/json'
-    }
-    """
-
-    # print("Response from API:", result)
-
+    result = post_data(api_url=td.api.gpt4o, token=td.token, data=messages)  # noqa
     message_content = result["choices"][0]["message"]["content"]
-    print("Message Response:", message_content)
+    rprint(f"POST for completion:\n{message_content}")
+
+    return result, td, settings
+
+
+if __name__ == "__main__":
+    setup_logging()
+    # Enable HTTP debugging
+    import http.client as httplib
+
+    httplib.HTTPConnection.debuglevel = 1
+
+    result, td, settings = debug_setup()
+
+    """ #TODO: Refactor
+    messages = {
+        "messages": [{"role": "user", "content": "Was ist der erste Buchstabe des Alphabets?"}]
+    }
+    headers: dict[str, str] = {"Authorization": f"Bearer {td.token}", "Content-Type": "application/json"}
+    post_data_options = dict(url=td.api.gpt4o, json=messages, headers=headers)
+    """
+
+    """
+        # result_requests = requests.post(**post_data_options)
+        # message_content_requests = result_requests.json()['choices'][0]['message']['content']
+        # rprint(f"POST for completion:\n{message_content_requests}")
+
+        # these two are equivalent (10/16/2024)
+
+        # result_post2api = post_data(api_url=ts.api.gpt4o, token=ts.token, data=messages)  # noqa
+        # message_content_post2api = result_post2api["choices"][0]["message"]["content"]
+        # rprint(f"POST for completion:\n{message_content_post2api}")
+    """
+
+    # #httplib debug result
+    #     send: b'POST /base-gpt-4o-128k/v1/chat/completions HTTP/1.1\r\n'\
+    #           b'Host: api.openai.wustl.edu\r\n'\
+    #           b'User-Agent: python-requests/2.32.3\r\n'\
+    #           b'Accept-Encoding: gzip, deflate\r\n'\
+    #           b'Accept: */*\r\n'\
+    #           b'Connection: keep-alive\r\n'\
+    #           b'Authorization: Bearer eyJ...RZQ\r\n'\
+    #           b'Content-Type: application/json\r\n'\
+    #           b'Content-Length: 89\r\n'\
+    #           b'\r\n'
+
+    """ ## -- ## It should look like this: ## -- ## #! 
+    POST for completion:
+        {'url': Url('https://api.openai.wustl.edu/base-gpt-4o-128k/v1/chat/completions'), 
+        'json': {'messages': [
+            {'role': 'user', 
+            'content': 'Was ist der erste Buchstabe des Alphabets?'}]},
+        'headers': {
+            'Authorization': 'Bearer eyJ0eXAiOi...SeUNkNg', 
+            'Content-Type': 'application/json'}
+        }
+    """

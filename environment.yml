@@ -10,6 +10,7 @@ dependencies:
     - pydantic
     - pydantic_settings
     - python-dotenv
+    - redis
     - requests
     - rich
 

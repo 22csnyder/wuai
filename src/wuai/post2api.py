@@ -5,7 +5,7 @@ import os
 from requests.auth import HTTPBasicAuth
 import time
 
-'''
+
 def get_access_token(url, client_id, client_secret, scope):
     payload = {
         'grant_type': 'client_credentials',
@@ -25,7 +25,7 @@ def get_access_token(url, client_id, client_secret, scope):
     except ValueError:  # Includes simplejson.decoder.JSONDecodeError
         print("Failed to parse JSON response")
         return None
-'''
+
 
 def post_data(api_url, token, data):
     headers = {

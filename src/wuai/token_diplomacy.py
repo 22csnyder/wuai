@@ -1,12 +1,15 @@
 # from get_access_token import get_access_token,
-import time
+import time, os
 
 import requests
 from requests.auth import HTTPBasicAuth
 
 from wuai.settings import Settings, Payload
 from wuai.status_code_exception import StatusCodeException, Timeout, TimeoutException
-from wuai.post2api import post_data
+from wuai.post2api import post_data, get_access_token
+
+from pprint import pprint
+from rich import print as rprint
 
 
 class TokenDiplomat(Settings):
@@ -27,12 +30,15 @@ class TokenDiplomat(Settings):
         """json of requests.post for token"""
         token_merit = {
             "url": self.token_url,
-            "auth": HTTPBasicAuth(self.client_id, self.client_secret),
+            "auth": HTTPBasicAuth(username=self.client_id, password=self.client_secret),
             "data": self.payload.model_dump(),
+            # data={
+            #'grant_type': 'CLIENT_CREDENTIALS',        # cursor: ignore
+            #'scope': Url('api://bbeee3.../.default')}  # cursor: ignore
             "timeout": 10,
         }
         self._merit = token_merit  # noqa
-        return token_merit
+        return self._merit
 
     def remaining_time(self):
         """int (s) of time remaining on token"""
@@ -68,7 +74,15 @@ if __name__ == "__main__":
     hello_message = {
         "messages": [{"role": "user", "content": "What is the first letter of the alphabet?"}]
     }
-    result = post_data(api_url=ts.api.gpt4o, token=token, hello_message)
+
+    result = post_data(api_url=ts.api.gpt4o, token=token, data=hello_message)
+
+    """
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/json'
+    }
+    """
 
     # print("Response from API:", result)
 

@@ -24,7 +24,6 @@ import openai
 # Can I set the token as the OPENAI_API_KEY? !?
 setup_logging()
 import http.client as httplib
-
 httplib.HTTPConnection.debuglevel = 1
 
 gpt4o_model = "base-gpt-4o-128k"

@@ -16,3 +16,5 @@ def setup_logging():
     # Set up OpenAI client logging
     http_client_logger = logging.getLogger("openai")
     http_client_logger.setLevel(logging.DEBUG)
+
+    # openai.logger.setLevel(logging.DEBUG)
